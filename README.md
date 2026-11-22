@@ -9,14 +9,20 @@ with what an app can do and a page cannot.
 ## What the app adds to PicoAmp for the web
 
 * **The TV's remote.** On Google TV the remote works PicoAmp:
-  * the **arrows** and **OK** are the arrow keys and Enter: choose and play in the list, and on the
-    other pages what the arrows do there;
-  * **OK held** (or a remote's menu key) opens the **menu** with what the letter keys do on a
-    keyboard: Player, Internet radio, Sonos, Search stations, Clock, Weather, News, Markets,
-    Spectrum / cover, Full screen, Equalizer, Pictures, Play / pause, Next, Previous, Stop, Shuffle,
-    Repeat, Mute and the help. The arrows choose, OK opens, Back closes it. It remembers its place;
-  * **Back** goes back: it closes a page or the equalizer, then goes up the folders of the list;
-    at the top it leaves the app (the music stops with it; Home leaves it playing);
+  * on the player a white **frame** shows where the arrows are: **Up/Down** move it between the
+    picture (spectrum, scope, cover), the list and the control row, **OK** goes in, **Back** comes out:
+    * the **picture**: Left/Right switch spectrum, scope and cover; OK on the cover shows it big
+      (full screen; on spectrum or scope: the full screen pictures);
+    * the **list**: the arrows and OK as ever (choose, open, play); Back goes up the folders;
+    * the **control row**: Left/Right choose previous, 10 s back, play, pause, stop, 10 s on, next,
+      shuffle, repeat, EQ or the volume, and OK does it. On EQ the arrows set the equalizer (OK or
+      Back closes it); on the volume Left/Right set it (OK or Back: done);
+  * **OK held** (or a remote's menu key) opens the **menu**: Internet radio, Sonos, Search
+    stations, Clock, Weather, News, Markets, Pictures and the help. The arrows choose, OK opens,
+    Back closes it;
+  * on the other pages (clock, news, markets ...) the arrows and OK are their keys, Back goes back;
+  * **Back** with the frame out of everything (and the list at its top) leaves the app (the music
+    stops with it; Home leaves it playing);
   * **play/pause, next, previous, fast forward and rewind** keys, where a remote has them, and
     channel up/down as next and previous.
   * The TV's own volume keys stay the TV's.
