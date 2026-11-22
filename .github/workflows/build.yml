@@ -40,7 +40,9 @@ jobs:
           PICOAMP_BUILD: ${{ github.run_number }}
         run: gradle assembleRelease --no-daemon --stacktrace
       - name: name it
-        run: cp app/build/outputs/apk/release/app-release.apk PicoAmp-${{ github.run_number }}.apk
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk PicoAmp-${{ github.run_number }}.apk
+          cp app/build/outputs/apk/release/app-release.apk PicoAmp.apk
       - uses: actions/upload-artifact@v4
         with:
           name: PicoAmp-apk
@@ -49,4 +51,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: PicoAmp-*.apk
+          files: PicoAmp.apk

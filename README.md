@@ -36,13 +36,14 @@ music playing on after the app is closed with Back.
 
 ## Install it (sideload)
 
-1. Download the newest **PicoAmp-*.apk**: the **Actions** tab of this repository → the newest green
-   *build* → *Artifacts* → **PicoAmp-apk** (a zip with the APK), or a release.
+1. The newest release's APK is always at
+   **`https://github.com/Jzzy-dev/android-picoamp/releases/latest/download/PicoAmp.apk`**
+   (every build of a push is also under the **Actions** tab → *Artifacts*, a zip, for a GitHub login).
 2. **Google TV:** Settings → System → About → click *Android TV OS build* seven times (you are a
    developer now). Then either:
    * install the *Downloader* app (by AFTVnews) from the Play Store, allow it under Settings → Apps →
-     Security & restrictions → Unknown sources, and open the APK's address in it (or put the APK on
-     a web server or Google Drive of your own); or
+     Security & restrictions → Unknown sources, and type the address above in it: it downloads and
+     installs the APK; or
    * with `adb`: Settings → System → Developer options → USB debugging (and *Wireless debugging* on
      newer ones), then on a PC `adb connect <the TV's address>` and `adb install -r PicoAmp-NN.apk`.
 3. **A phone or tablet:** open the APK on it and allow the installation from that app.

@@ -57,7 +57,6 @@ class MainActivity : Activity() {
         val s = web.settings
         s.javaScriptEnabled = true
         s.domStorageEnabled = true
-        s.databaseEnabled = true
         s.mediaPlaybackRequiresUserGesture = false
         s.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW     // http stations, a PC's bridge
         s.allowFileAccess = false
