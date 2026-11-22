@@ -1,0 +1,52 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  WEB_REF: tv            # the branch of PicoAmp for the web the app is made from
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PicoAmp for the web (its source)
+        uses: actions/checkout@v4
+        with:
+          repository: Jzzy-dev/web-picoamp
+          ref: ${{ env.WEB_REF }}
+          path: web-src
+      - name: wasi-sdk
+        run: curl -sSL https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz | tar xz -C "$HOME"
+      - name: PicoAmp for the web (WebAssembly)
+        run: make -C web-src WASI_SDK="$HOME/wasi-sdk-25.0-x86_64-linux"
+      - name: into the app's assets
+        run: |
+          mkdir -p app/src/main/assets/web
+          cp -r web-src/web/. app/src/main/assets/web/
+          ls -la app/src/main/assets/web
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.11.1
+      - name: the APK
+        env:
+          PICOAMP_BUILD: ${{ github.run_number }}
+        run: gradle assembleRelease --no-daemon --stacktrace
+      - name: name it
+        run: cp app/build/outputs/apk/release/app-release.apk PicoAmp-${{ github.run_number }}.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PicoAmp-apk
+          path: PicoAmp-*.apk
+      - name: a release for a v* tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: PicoAmp-*.apk

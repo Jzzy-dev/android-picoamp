@@ -1,0 +1,7 @@
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+# PicoAmp for the web: copied in by the build (see README)
+app/src/main/assets/web/
