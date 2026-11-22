@@ -8,6 +8,9 @@ on:
 env:
   WEB_REF: tv            # the branch of PicoAmp for the web the app is made from
 
+permissions:
+  contents: write        # (a release for every build of main)
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -47,8 +50,13 @@ jobs:
         with:
           name: PicoAmp-apk
           path: PicoAmp-*.apk
-      - name: a release for a v* tag
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: a release for every build of main (releases/latest/download/PicoAmp.apk is the newest)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: PicoAmp for Android 0.1.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          body: "Sideload it: Downloader on Google TV, https://github.com/Jzzy-dev/android-picoamp/releases/latest/download/PicoAmp.apk (see the README)."
+          make_latest: true
           files: PicoAmp.apk
