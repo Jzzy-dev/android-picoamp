@@ -44,8 +44,15 @@ android {
 
     // (the program's WebAssembly as it is)
     androidResources { noCompress += listOf("wasm") }
+
+    // (smbj's Bouncy Castle: its Java 9 manifests are not the app's)
+    packaging {
+        resources.excludes += listOf("META-INF/versions/9/OSGI-INF/MANIFEST.MF", "META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*")
+    }
 }
 
 dependencies {
     implementation("androidx.webkit:webkit:1.12.1")
+    // Windows and NAS shares (SMB 2/3), for the pictures
+    implementation("com.hierynomus:smbj:0.13.0")
 }

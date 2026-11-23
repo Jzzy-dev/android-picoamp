@@ -40,6 +40,11 @@ with what an app can do and a page cannot.
 * **The volume is the TV's.** PicoAmp plays at full and its volume is the device's: the TV's volume
   keys show on the player, and the player's volume sets it (a Chromecast whose volume is the TV's,
   by HDMI-CEC: up and down there).
+* **Pictures from the network.** The Pictures page's *Choose a folder of pictures* offers a **media
+  server** (DLNA: most NAS boxes, Windows Media sharing, Plex, Jellyfin...; found by itself), a
+  **Windows or NAS share** (`\\PC\Pictures`, a user and password or as a guest; SMB 2/3) and
+  **PicoAmp for Windows** (its Pictures folder over its MSX link, port 8765). The ones chosen are
+  remembered (OK held: forgotten). (The share's password is kept in the app's own storage.)
 * **Sharp covers.** The covers are drawn in their own resolution over the MSX's, on the player and
   full screen.
 * **No relay needed:** the stations' song titles, the markets and the news come straight from their
@@ -90,6 +95,7 @@ gradle assembleRelease        # Android SDK 35, JDK 17 -> app/build/outputs/apk/
 
 | File | What |
 |------|------|
+| `NetPictures.kt` | `/net/`: the media servers (SSDP, ContentDirectory) and shares (smbj) for the Pictures page |
 | `MainActivity.kt` | The WebView with the page from the app's assets, the remote's keys (`picoamp.tvKey(...)` and `picoamp.tv(...)` in the page), the volume |
 | `Relay.kt` | `/relay/?url=`: the page's relay in the app |
 | `SonosBridge.kt` | `/sonos/...`: the Sonos bridge in the app (as PicoAmp for Windows has it) |

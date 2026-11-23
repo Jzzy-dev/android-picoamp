@@ -76,6 +76,7 @@ class MainActivity : Activity() {
             .build()
         val relay = Relay(browserAgent)
         val sonos = SonosBridge(this)
+        val net = NetPictures(this)
 
         web.webChromeClient = WebChromeClient()          // (prompt(): the search's text)
         web.webViewClient = object : WebViewClient() {
@@ -86,6 +87,7 @@ class MainActivity : Activity() {
                 return when {
                     path.startsWith("/relay") -> relay.handle(u)
                     path.startsWith("/sonos/") -> sonos.handle(u)
+                    path.startsWith("/net/") -> net.handle(u)
                     path.endsWith(".wasm") -> assets.shouldInterceptRequest(u)?.also { it.mimeType = "application/wasm" }
                     else -> assets.shouldInterceptRequest(u)
                 }
