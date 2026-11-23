@@ -8,6 +8,8 @@
 //    shown on the player and set from it
 //  * /relay/?url=: the page's relay, here in the app (no other site's CORS rules apply to an app),
 //    for the song titles of stations, the markets and the news
+//  * /net/...: pictures and music from a share, a media server and the TV itself (NetPictures.kt);
+//    the music on the TV: Android asks once whether PicoAmp may read it (musicAccess)
 //  * /sonos/...: the Sonos bridge (as PicoAmp for Windows has it), here in the app: the rooms of the
 //    network and their keys, without a PC
 //
@@ -15,14 +17,17 @@
 // own origin, so its storage (settings, lists, logos) stays.
 package nl.jzzy.picoamp
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.UiModeManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.database.ContentObserver
 import android.media.AudioManager
 import android.provider.Settings
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -87,7 +92,7 @@ class MainActivity : Activity() {
                 return when {
                     path.startsWith("/relay") -> relay.handle(u)
                     path.startsWith("/sonos/") -> sonos.handle(u)
-                    path.startsWith("/net/") -> net.handle(u)
+                    path.startsWith("/net/") -> net.handle(u, request.requestHeaders ?: emptyMap())
                     path.endsWith(".wasm") -> assets.shouldInterceptRequest(u)?.also { it.mimeType = "application/wasm" }
                     else -> assets.shouldInterceptRequest(u)
                 }
@@ -220,8 +225,29 @@ class MainActivity : Activity() {
         return super.dispatchKeyEvent(e)
     }
 
+    // ---------------------------------------------------------------- the music on the TV: may PicoAmp read it?
+    private val musicPermission get() = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
+    private fun musicAllowed() = Build.VERSION.SDK_INT < 23 || checkSelfPermission(musicPermission) == PackageManager.PERMISSION_GRANTED
+    @Volatile private var musicAnswer = ""                // "yes", "no" (the last answer), "" not asked
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 7) musicAnswer = if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) "yes" else "no"
+    }
+
     // ---------------------------------------------------------------- the page's calls
     inner class Bridge {
+        // the music on the TV: allowed; ask (Android's question, once); its answer ("yes", "no", "")
+        @JavascriptInterface fun musicAccess(): Boolean = musicAllowed()
+        @JavascriptInterface fun askMusicAccess() {
+            ui.post {
+                musicAnswer = ""
+                if (musicAllowed()) musicAnswer = "yes"
+                else if (Build.VERSION.SDK_INT >= 23) requestPermissions(arrayOf(musicPermission), 7)
+            }
+        }
+        @JavascriptInterface fun musicAsked(): String = musicAnswer
+
         @JavascriptInterface fun exit() { ui.post { finish() } }
         @JavascriptInterface fun isTv(): Boolean = this@MainActivity.isTv()
 
