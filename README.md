@@ -45,6 +45,11 @@ with what an app can do and a page cannot.
   **Windows or NAS share** (`\\PC\Pictures`, a user and password or as a guest; SMB 2/3) and
   **PicoAmp for Windows** (its Pictures folder over its MSX link, port 8765). The ones chosen are
   remembered (OK held: forgotten). (The share's password is kept in the app's own storage.)
+* **Music from the network and from the TV.** The music list's *Choose a music folder* offers the same
+  (a media server's songs, numbered as on their album; a share; PicoAmp for Windows' Music folder)
+  and **the music on this TV** and its USB sticks (Android's music library: a folder for each
+  storage, its folders in it; Android asks once whether PicoAmp may read it). The songs are streamed,
+  so seeking works, and their tags and covers show as from a folder.
 * **Sharp covers.** The covers are drawn in their own resolution over the MSX's, on the player and
   full screen.
 * **No relay needed:** the stations' song titles, the markets and the news come straight from their
