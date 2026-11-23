@@ -10,22 +10,38 @@ with what an app can do and a page cannot.
 
 * **The TV's remote.** On Google TV the remote works PicoAmp:
   * on the player a white **frame** shows where the arrows are: **Up/Down** move it between the
-    picture (spectrum, scope, cover), the list and the control row, **OK** goes in, **Back** comes out:
+    remote's own row, the seek bar, the picture (spectrum, scope, cover), the list and the control
+    row, **OK** goes in, **Back** comes out:
+    * the **remote's own row** (Up at the top): **Menu**, **Help**, **Sound** (full, or light: the
+      stations without Web Audio, no spectrum or equalizer, for a TV too slow for it) and **Exit**;
+      Left/Right choose, OK does it;
+    * the **seek bar**: Left/Right go 10 s back or on (a track; a station cannot be wound);
     * the **picture**: Left/Right switch spectrum, scope and cover; OK on the cover shows it big
       (full screen; on spectrum or scope: the full screen pictures);
     * the **list**: the arrows and OK as ever (choose, open, play); Back goes up the folders;
+      **OK held** on a station adds it to the favourites (in the favourites: takes it out);
     * the **control row**: Left/Right choose previous, 10 s back, play, pause, stop, 10 s on, next,
       shuffle, repeat, EQ or the volume, and OK does it. On EQ the arrows set the equalizer (OK or
-      Back closes it); on the volume Left/Right set it (OK or Back: done);
-  * **OK held** (or a remote's menu key) opens the **menu**: Internet radio, Sonos, Search
-    stations, Clock, Weather, News, Markets, Pictures and the help. The arrows choose, OK opens,
-    Back closes it;
-  * on the other pages (clock, news, markets ...) the arrows and OK are their keys, Back goes back;
+      Back closes it); on the volume Left/Right set the **TV's volume** (OK or Back: done);
+  * **OK held** elsewhere (or a remote's menu key, or Menu in the top row) opens the **menu**:
+    Internet radio, Sonos, Search stations, Clock, Weather, News, Markets, Pictures and the help.
+    The arrows choose, OK opens, Back closes it;
+  * on the other pages the arrows and OK are their keys, Back goes back, and their key rows can be
+    chosen word by word (a frame; Left/Right, OK; Up or Back leaves the row):
+    * the **clock**: Down; place and alarm open the TV's on-screen keyboard;
+    * the **markets**: Left held (1 Europe, 2 Americas, 3 Asia-Pacific, C, W, T, $/ESC); Right held
+      the index's members, Up held the prices now, Down held the order. On a chart: Down held frames
+      its headlines (OK: its news), Down again the key row;
+    * the **news**: Down held. In My feeds OK held on the right adds the feed, on the left removes it;
   * **Back** with the frame out of everything (and the list at its top) leaves the app (the music
     stops with it; Home leaves it playing);
   * **play/pause, next, previous, fast forward and rewind** keys, where a remote has them, and
     channel up/down as next and previous.
-  * The TV's own volume keys stay the TV's.
+* **The volume is the TV's.** PicoAmp plays at full and its volume is the device's: the TV's volume
+  keys show on the player, and the player's volume sets it (a Chromecast whose volume is the TV's,
+  by HDMI-CEC: up and down there).
+* **Sharp covers.** The covers are drawn in their own resolution over the MSX's, on the player and
+  full screen.
 * **No relay needed:** the stations' song titles, the markets and the news come straight from their
   sites (a page needs the relay for them; an app does not).
 * **Sonos without a PC:** the Sonos entry finds the rooms of the house itself and is their screen and
@@ -74,7 +90,7 @@ gradle assembleRelease        # Android SDK 35, JDK 17 -> app/build/outputs/apk/
 
 | File | What |
 |------|------|
-| `MainActivity.kt` | The WebView with the page from the app's assets, the remote's keys (`picoamp.tv(...)` in the page) |
+| `MainActivity.kt` | The WebView with the page from the app's assets, the remote's keys (`picoamp.tvKey(...)` and `picoamp.tv(...)` in the page), the volume |
 | `Relay.kt` | `/relay/?url=`: the page's relay in the app |
 | `SonosBridge.kt` | `/sonos/...`: the Sonos bridge in the app (as PicoAmp for Windows has it) |
 

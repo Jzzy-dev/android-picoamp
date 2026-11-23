@@ -1,8 +1,11 @@
 // PicoAmp for Android (Google TV first, phones and tablets too): PicoAmp for the web in a
 // full-screen WebView, from the app's own assets. What the app adds:
 //
-//  * the TV's remote: the arrows, OK (held: PicoAmp's menu), Back and the media keys go to the
-//    page as picoamp.tv(action); Back at the top of the list leaves the app
+//  * the TV's remote: the arrows and OK go to the page as they go (picoamp.tvKey: pressed, held
+//    on, let go: the page tells a press from a key held), Back and the media keys as
+//    picoamp.tv(action); Back at the top of the list (or the page's Exit) leaves the app
+//  * the volume: the device's (the TV's, by HDMI-CEC when the device's own is fixed) is PicoAmp's:
+//    shown on the player and set from it
 //  * /relay/?url=: the page's relay, here in the app (no other site's CORS rules apply to an app),
 //    for the song titles of stations, the markets and the news
 //  * /sonos/...: the Sonos bridge (as PicoAmp for Windows has it), here in the app: the rooms of the
@@ -16,6 +19,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.UiModeManager
 import android.content.Context
+import android.database.ContentObserver
+import android.media.AudioManager
+import android.provider.Settings
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
@@ -35,14 +41,15 @@ import androidx.webkit.WebViewAssetLoader
 class MainActivity : Activity() {
     private lateinit var web: WebView
     private val ui = Handler(Looper.getMainLooper())
-    private var okDown = false
-    private var okLong = false
-    private val okHeld = Runnable { okLong = true; tv("longok") }
+    private lateinit var audio: AudioManager
+    private var volumeSeen = -1
+    private val volumeWatch = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) = volumeChanged()
+    }
 
     companion object {
         const val HOST = "appassets.androidplatform.net"
         const val ORIGIN = "https://$HOST"
-        const val HOLD_MS = 600L
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -95,6 +102,23 @@ class MainActivity : Activity() {
         if (savedInstanceState == null) web.loadUrl("$ORIGIN/assets/web/index.html$q")
         else web.restoreState(savedInstanceState)
         web.requestFocus()
+
+        audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        contentResolver.registerContentObserver(Settings.System.CONTENT_URI, true, volumeWatch)
+    }
+
+    // ---------------------------------------------------------------- the volume
+    private fun volumePercent(): Int {
+        val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        return if (max <= 0) 100 else Math.round(audio.getStreamVolume(AudioManager.STREAM_MUSIC) * 100f / max)
+    }
+
+    private fun volumeChanged() {
+        if (audio.isVolumeFixed) return
+        val v = volumePercent()
+        if (v == volumeSeen) return
+        volumeSeen = v
+        web.evaluateJavascript("window.picoamp && picoamp.systemVolume($v)", null)
     }
 
     private fun enc(s: String) = java.net.URLEncoder.encode(s, "UTF-8")
@@ -125,6 +149,7 @@ class MainActivity : Activity() {
     // (the page is not paused when the app goes to the background: the music plays on)
     override fun onDestroy() {
         web.evaluateJavascript("window.picoamp && picoamp.save()", null)
+        contentResolver.unregisterContentObserver(volumeWatch)
         web.destroy()
         super.onDestroy()
     }
@@ -139,11 +164,23 @@ class MainActivity : Activity() {
         web.evaluateJavascript("window.picoamp ? picoamp.tv('$action') : 'ok'") { r -> then?.invoke(r.trim('"')) }
     }
 
-    private fun actionOf(code: Int): String? = when (code) {
+    // the arrows and OK: 'down', 'repeat' (held on) and 'up' (let go); 'exit': the page's Exit
+    private fun tvKey(phase: String, key: String) {
+        web.evaluateJavascript("window.picoamp && picoamp.tvKey ? picoamp.tvKey('$phase', '$key') : 'ok'") { r ->
+            if (r.trim('"') == "exit") finish()
+        }
+    }
+
+    private fun dpadOf(code: Int): String? = when (code) {
         KeyEvent.KEYCODE_DPAD_UP -> "up"
         KeyEvent.KEYCODE_DPAD_DOWN -> "down"
         KeyEvent.KEYCODE_DPAD_LEFT -> "left"
         KeyEvent.KEYCODE_DPAD_RIGHT -> "right"
+        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> "ok"
+        else -> null
+    }
+
+    private fun actionOf(code: Int): String? = when (code) {
         KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_HEADSETHOOK -> "playpause"
         KeyEvent.KEYCODE_MEDIA_PLAY -> "play"
         KeyEvent.KEYCODE_MEDIA_PAUSE -> "pause"
@@ -159,18 +196,13 @@ class MainActivity : Activity() {
 
     override fun dispatchKeyEvent(e: KeyEvent): Boolean {
         val code = e.keyCode
-        // a keyboard's letters, digits and the like: to the page as they are
-        if (code == KeyEvent.KEYCODE_DPAD_CENTER || (code == KeyEvent.KEYCODE_ENTER && e.device?.isVirtual != true) ||
-            code == KeyEvent.KEYCODE_NUMPAD_ENTER) {
-            // OK: a press is Enter, held it opens the menu
-            if (e.action == KeyEvent.ACTION_DOWN && e.repeatCount == 0 && !okDown) {
-                okDown = true
-                okLong = false
-                ui.postDelayed(okHeld, HOLD_MS)
-            } else if (e.action == KeyEvent.ACTION_UP) {
-                ui.removeCallbacks(okHeld)
-                if (okDown && !okLong) tv("ok")
-                okDown = false
+        // the arrows and OK (a keyboard's Enter too, not the on-screen keyboard's): as they go
+        val pad = dpadOf(code) ?: if (code == KeyEvent.KEYCODE_ENTER && e.device?.isVirtual != true) "ok" else null
+        if (pad != null) {
+            when {
+                e.action == KeyEvent.ACTION_DOWN && e.repeatCount == 0 -> tvKey("down", pad)
+                e.action == KeyEvent.ACTION_DOWN -> tvKey("repeat", pad)
+                e.action == KeyEvent.ACTION_UP -> tvKey("up", pad)
             }
             return true
         }
@@ -190,5 +222,23 @@ class MainActivity : Activity() {
     inner class Bridge {
         @JavascriptInterface fun exit() { ui.post { finish() } }
         @JavascriptInterface fun isTv(): Boolean = this@MainActivity.isTv()
+
+        // the volume: the device's, 0-100; fixed (a TV's by HDMI-CEC): only up or down
+        @JavascriptInterface fun getVolume(): Int = volumePercent().also { volumeSeen = it }
+        @JavascriptInterface fun volumeFixed(): Boolean = audio.isVolumeFixed
+        @JavascriptInterface fun setVolume(v: Int) {
+            ui.post {
+                val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                val i = Math.round(v.coerceIn(0, 100) * max / 100f)
+                volumeSeen = if (max <= 0) 100 else Math.round(i * 100f / max)
+                audio.setStreamVolume(AudioManager.STREAM_MUSIC, i, AudioManager.FLAG_SHOW_UI)
+            }
+        }
+        @JavascriptInterface fun volumeStep(d: Int) {
+            ui.post {
+                audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+                    if (d > 0) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
+            }
+        }
     }
 }
