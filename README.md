@@ -6,6 +6,8 @@ Android phones and tablets. It is [PicoAmp for the web](https://github.com/Jzzy-
 app: the same program (C compiled to WebAssembly) that draws every page cell for cell as on the MSX,
 with what an app can do and a page cannot.
 
+<img width="2000" height="1500" alt="WhatsApp Image 2026-11-23 at 20 56 41" src="https://github.com/user-attachments/assets/0cb2931a-a803-42b7-98b3-b91eb7cde5e1" />
+
 ## What the app adds to PicoAmp for the web
 
 * **The TV's remote.** On Google TV the remote works PicoAmp:
