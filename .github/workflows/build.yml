@@ -51,7 +51,7 @@ jobs:
           name: PicoAmp-apk
           path: PicoAmp-*.apk
       - name: a release for every build of main (releases/latest/download/PicoAmp.apk is the newest)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'   # (a push, or Run workflow: after a change to the web)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v0.1.${{ github.run_number }}
